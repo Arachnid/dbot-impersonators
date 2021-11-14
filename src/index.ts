@@ -6,12 +6,18 @@ const client = new Discord.Client({
   intents: [
     Intents.FLAGS.GUILDS,
     Intents.FLAGS.GUILD_MEMBERS,
-    Intents.FLAGS.GUILD_MESSAGES,
     Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
   ],
 });
 
-let protectedUsers: { id: string; username: string; discriminator: string }[] = [];
+let protectedUsers: { id: string; username: string; discriminator: string }[] = [
+  {id: "0", username: "ENSDOMAIN.ETH AIRDROP", discriminator: "0000"},
+  {id: "0", username: "ensdomains airdrop", discriminator: "0000"},
+  {id: "0", username: "ens.eth", discriminator: "0000"},
+  {id: "0", username: "ensdomain.eth", discriminator: "0000"},
+  {id: "0", username: "Announcement", discriminator: "0000"},
+  {id: "0", username: "Server", discriminator: "0000"},
+];
 const protectedRoles: string[] = [];
 
 client.login(process.env.DISCORD_API_KEY!).then(async () => {
@@ -21,13 +27,9 @@ client.login(process.env.DISCORD_API_KEY!).then(async () => {
   const membersList = members.toJSON();
 
   await Promise.all([
-    addRoleToProtectedList(guild, "420256938807263260") /* Admin */,
-    addRoleToProtectedList(guild, "836764299460083753") /* HPrivakos */,
-    //addRoleToProtectedList(guild, "423163126532276227") /* Pokegoat */,
-    addRoleToProtectedList(guild, "626480948825030656") /* Decentraland */,
-    addRoleToProtectedList(guild, "531448171646418944") /* Community Mods */,
-    addRoleToProtectedList(guild, "617756765034905621") /* Mentor */,
-    //addRoleToProtectedList(guild, "857891892490272769") /* DAO */,
+    addRoleToProtectedList(guild, "874687680854753291") /* Collab.Land */,
+    addRoleToProtectedList(guild, "742386352816914552") /* ens-team */,
+    addRoleToProtectedList(guild, "903477671697190942") /* Integromat */,
   ]);
   protectedUsers = uniqBy(protectedUsers, (a) => JSON.stringify({ id: a.id, username: a.username }));
 
@@ -40,10 +42,10 @@ client.login(process.env.DISCORD_API_KEY!).then(async () => {
   client.on("guildMemberUpdate", (oldMember, newMember) => {
     const newMemberRole = newMember.roles.cache.toJSON();
     const oldMemberRole = oldMember.roles.cache.toJSON();
-    const addedRole = newMemberRole.filter((x) => oldMemberRole.indexOf(x) === -1);
-    const removedRole = oldMemberRole.filter((x) => newMemberRole.indexOf(x) === -1);
+    const addedRole = newMemberRole.filter((x) => !oldMemberRole.includes(x));
+    const removedRole = oldMemberRole.filter((x) => !newMemberRole.includes(x));
     /* If role added to user, add protection */
-    if (addedRole.map((r) => r.name).length && protectedRoles.indexOf(addedRole[0].id)) {
+    if (addedRole.map((r) => r.name).length && protectedRoles.includes(addedRole[0].id)) {
       console.log(`Adding ${newMember.user.username} to the protected list (role added)`);
       protectedUsers.push({
         id: newMember.user.id,
@@ -61,7 +63,7 @@ client.login(process.env.DISCORD_API_KEY!).then(async () => {
     }
 
     /* If role removed from user, remove protection */
-    if (removedRole.map((r) => r.name).length && protectedRoles.indexOf(removedRole[0].id)) {
+    if (removedRole.map((r) => r.name).length && protectedRoles.includes(removedRole[0].id)) {
       if (newMember.nickname) console.log(`Removing ${newMember.nickname} from the protected list (role removed)`);
       console.log(`Removing ${newMember.user.username} from the protected list (role removed)`);
       protectedUsers = protectedUsers.filter((u) => {
@@ -117,6 +119,7 @@ client.login(process.env.DISCORD_API_KEY!).then(async () => {
         const index = protectedUsers.findIndex((v) => {
           if (oldUser.id == v.id && oldUser.username == v.username) return true;
         });
+        if(index == -1) return;
         // User change
         console.log(`Changing (old: ${oldUser.username}) ${newUser.username} in the protected list (username changed)`);
         protectedUsers[index].username = newUser.username;
